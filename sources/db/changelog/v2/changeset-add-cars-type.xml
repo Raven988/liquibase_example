@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd ">
+
+    <changeSet id="v2" author="Roman" labels="example-label" context="example-context">
+        <comment>Добавление колонки type</comment>
+        <sqlFile dbms="postgresql"
+                 encoding="utf8"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"
+                 path="add-cars-type.sql"/>
+        <rollback>
+            <sqlFile dbms="postgresql"
+                     encoding="utf8"
+                     relativeToChangelogFile="true"
+                     splitStatements="true"
+                     stripComments="true"
+                     path="drop-cars-type.sql"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

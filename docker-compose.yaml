@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB} # создание базы данных
+      POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
+    ports:
+      - ${POSTGRES_DB_PORT}:5432
+    # network_mode: 'host'
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    restart: always
+
+  liquibase:
+    image: liquibase/liquibase:latest
+    container_name: liquibase
+    # network_mode: 'host'
+    depends_on:
+      - db
+    command: bash -c 'while !</dev/tcp/postgres_db/5432; do sleep 1; done; liquibase --url=jdbc:postgresql://postgres_db:5432/postgres --defaultsFile=/liquibase/db/liquibase.properties update'
+    volumes:
+      - ./sources/db:/liquibase/db
+
