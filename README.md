@@ -269,7 +269,7 @@ drop-cars-color.sql:
 alter table cars
 drop column color;
 ```
-Аналогично заполнена V3.  
+Аналогично заполнены V3.  
   
 Находять в директории project, выполните код в терминале:
 ```bash
@@ -281,9 +281,10 @@ liquibase --defaultsFile=./sources/db/liquibase.properties rollback --tag=v.1.0
 ```
 
 # Пример команды для запуска liquibase в контейнере.
+Примечание - у контейнера postgres должен быть настроен порт, либо запушен с флагом --network=host
 
 ```bash
-docker run --rm --network=host -v {LOCAL_PATH}/db:/liquibase/db liquibase/liquibase:latest --defaultsFile=/liquibase/db/liquibase.properties update
+docker run --rm --network=host -v {LOCAL_PATH}/sources/db:/liquibase/db liquibase/liquibase:latest --defaultsFile=/liquibase/db/liquibase.properties update
 ```
 * флаг --rm удаляет контейнер после выполнения
 * флаг --network=host позволяет использовать локальные порты
@@ -340,5 +341,5 @@ docker-compose up
 
 Для выполеннися отката по тэгу можно ввести команду:
 ```bash
-docker run --rm --network=host -v {LOCAL_PATH}db:/liquibase/db liquibase/liquibase:latest --defaultsFile=/liquibase/db/liquibase.properties rollback --tag=v.1.0
+docker run --rm --network=host -v {LOCAL_PATH}/sources/db:/liquibase/db liquibase/liquibase:latest --defaultsFile=/liquibase/db/liquibase.properties rollback --tag=v.1.0
 ```
