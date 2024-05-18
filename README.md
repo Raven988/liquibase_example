@@ -1,3 +1,22 @@
+# liquibase
+Для подробной информации ознакомтесь с [официальной документацией.](https://docs.liquibase.com/home.html)  
+
+Liquibase — это инструмент для управления схемой базы данных, который позволяет отслеживать, версионировать и применять изменения в базе данных. Он особенно полезен в проектах, где есть необходимость в управлении сложными изменениями схемы базы данных, синхронизации разных версий базы данных и обеспечения непрерывной интеграции (CI/CD).
+
+Основные функции Liquibase включают:
+
+ * Версионирование схемы базы данных: Позволяет отслеживать изменения в схеме базы данных с помощью так называемых "changelog-файлов". Эти файлы могут быть написаны в формате XML, YAML, JSON или SQL.  
+
+ * Автоматическое применение изменений: Liquibase может автоматически применять изменения к базе данных, которые описаны в changelog-файлах. Это облегчает процесс развертывания изменений и уменьшает риск ошибок.  
+
+ * Поддержка разных баз данных: Liquibase поддерживает множество популярных СУБД, таких как MySQL, PostgreSQL, Oracle, SQL Server и другие.  
+
+ * Роллбек изменений: Liquibase позволяет откатывать изменения, если это необходимо. Это полезно для отмены некорректных изменений и восстановления предыдущего состояния базы данных.  
+
+ * Сравнение и синхронизация баз данных: Liquibase может сравнивать схемы баз данных и генерировать скрипты для синхронизации различий. 
+
+ * Интеграция с CI/CD: Liquibase можно интегрировать с системами непрерывной интеграции и развертывания, такими как Jenkins, GitHub Actions и другими.  
+
 # Установка liquibase на Linux/Unix
 ## загрузка установочных файлов
 Скачать с [официального сайта.](https://github.com/liquibase/liquibase/releases)
@@ -46,8 +65,220 @@ sudo apt-get install liquibase
 liquibase --version
 ```
 
-# Пример использования liquibase
+# Пример использования liquibase с Postgresql
+Предворительно установлен и настроен Postgresql.  
+Примерная структура проекта:
+```
+project/  
+├── sources/  
+│   └─ db/  
+│      ├── changelog/  
+|      |      ├── v1/ 
+|      |      |    ├── v1-changelog.xml
+|      |      |    ├── changeset-create-cars-table.xml
+|      |      |    ├── changeset-create-price-table.xml
+|      |      |    ├── create-cars-table.sql
+|      |      |    ├── create-price-table.sql
+|      |      |    ├── drop-cars-table.sql
+|      |      |    └── drop-price-table.sql
+|      |      ├── v2/  
+|      |      |    ├── v2-changelog.xml
+|      |      |    ├── changeset-add-cars-color.xml
+|      |      |    ├── add-cars-color.sql
+|      |      |    └──  drop-cars-color.sql 
+|      |      ├── v3/  
+|      |      └── main_changelog.xml   
+│      └── liquibase.properties  
+├── .gitignore  
+└── README.md  
+```
+Best Practices: использовать корневой main_changelog.xml со всеми изменениями.  
+  
+Настройки для подключения liquibase к базе данных.  
+liquibase.properties:
+```
+url=jdbc:postgresql://localhost:5432/postgres
+username=postgres
+password=postgres
+changeLogFile=sources/db/changelog/main_changelog.xml
+```
+main_changelog.xml:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
 
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd ">
+
+    # Установка типа драйвера для работы с БД
+    <preConditions>
+        <dbms type="postgresql"/>
+    </preConditions>
+
+    # Включение файла в миграцию
+    <include file="v1/v1-changelog.xml" relativeToChangelogFile="true"/>
+
+    # Установка тэга позволяет использовать rollbak по тэгу
+    <changeSet id="v1" author="Roman" labels="example-label" context="example-context">
+        <tagDatabase tag="v.1.0"/>
+    </changeSet>
+
+    <include file="v2/v2-changelog.xml" relativeToChangelogFile="true"/>
+
+    <changeSet id="v2" author="Roman" labels="example-label" context="example-context">
+        <tagDatabase tag="v.2.0"/>
+    </changeSet>
+
+    <include file="v3/v3-changelog.xml" relativeToChangelogFile="true"/>
+
+    <changeSet id="v3" author="Roman" labels="example-label" context="example-context">
+        <tagDatabase tag="v.3.0"/>
+    </changeSet>
+
+</databaseChangeLog>
+```
+v1/v1-changelog.xml:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd ">
+
+    <include file="changeset-create-cars-table.xml" relativeToChangelogFile="true"/>
+    <include file="changeset-create-price-table.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>
+```
+changeset-create-cars-table.xml:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd ">
+
+    # Параметры записываются во вспомогательную таблицу liquibase
+    <changeSet id="v1" author="Roman" labels="example-label" context="example-context">
+        <comment>Создание таблицы cars</comment>
+        <sqlFile dbms="postgresql"
+                 encoding="utf8"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"                 
+                 path="create-cars-table.sql"/> # указываем на SQL скрипт
+        # Для возможности откатов необходимо так-же указать SQL скрипт
+        # (вместо SQL можно использовать другие форматы: XML, YAML, JSON)
+        <rollback>
+            <sqlFile dbms="postgresql"
+                     encoding="utf8"
+                     relativeToChangelogFile="true"
+                     splitStatements="true"
+                     stripComments="true"
+                     path="drop-users-table.sql"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
+```
+create-cars-table.sql:
+```sql
+create table cars (
+    id bigint not null,
+    model varchar(50) not null,
+    mark varchar(50) not null,
+    primary key (id)
+);
+```
+drop-users-table.sql:
+```sql
+drop table cars;
+```
+v2/v2-changelog.xml:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd ">
+
+    <include file="changeset-add-cars-color.xml" relativeToChangelogFile="true"/>
+
+</databaseChangeLog>
+```
+changeset-add-cars-color.xml:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/pro
+        http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd ">
+
+    <changeSet id="v2" author="Roman" labels="example-label" context="example-context">
+        <comment>Добавление колонки color</comment>
+        <sqlFile dbms="postgresql"
+                 encoding="utf8"
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"
+                 path="add-cars-color.sql"/>
+        <rollback>
+            <sqlFile dbms="postgresql"
+                     encoding="utf8"
+                     relativeToChangelogFile="true"
+                     splitStatements="true"
+                     stripComments="true"
+                     path="drop-cars-color.sql"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>
+```
+add-cars-color.sql:
+```sql
+alter table cars
+add column color varchar(50);
+```
+drop-cars-color.sql:
+```sql
+alter table cars
+drop column color;
+```
+Аналогично заполнена V3.  
+  
+Находять в директории project, выполните код в терминале:
+```bash
+liquibase --defaultsFile=./sources/db/liquibase.properties update
+```
+Для отката до тэга команда:
+```bash
+liquibase --defaultsFile=./sources/db/liquibase.properties rollback --tag=v.1.0
+```
 
 # Пример команды для запуска liquibase в контейнере.
 
