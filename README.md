@@ -45,7 +45,7 @@ echo 'export PATH=$PATH:/usr/local/bin/liquibase-4.27.0' >> ~/.bashrc
 ```bash
 liquibase --version
 ```
-## установка с помощью Debian / Ubuntu
+## установка на Debian / Ubuntu
 ```bash
 sudo mkdir -p /usr/share/keyrings
 ```
